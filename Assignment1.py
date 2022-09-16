@@ -4,3 +4,31 @@ import math
 
 
 #Engine parameters
+inlet_p_ratio = 0.98
+mdot_a = 173 #kg/s
+BPR = np.array([12, 9, 11, 13]) #12 for Part 1, rest for Part 2
+FPR = np.array([1.4, 1.5]) #1.4 for Part 1, both needed for Part 2
+LPCPR = 1.7
+HPCPR = np.array([12.5, 11, 13, 15]) #12.5 for Part 1, rest for Part 2
+T4 = 1400 #K
+fan_isentropic_eff = 0.9
+LPC_isentropic_eff = 0.92
+HPC_isentropic_eff = LPC_isentropic_eff
+LPT_isentropic_eff = 0.9
+HPT_isentropic_eff = LPT_isentropic_eff
+mech_eff = 0.99
+comb_eff = 0.995 #Combustor
+comb_p_ratio = 0.96
+nozz_eff = 0.98 #Convergent
+T0 = 218.8 #K
+P0 = 23842 #Pa
+gas_const = 287 #J/kg/K
+LHV = 43 #MJ/kg
+cp_a = 1000 #J/kg/K
+cp_g = 1150 #J/kg/K
+gamma_a = 1.4
+gamma_g = 1.33
+
+#Flight Conditions
+Mach = 0.78
+h = 10668 #m, altitude
