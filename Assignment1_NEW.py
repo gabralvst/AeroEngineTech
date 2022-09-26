@@ -9,7 +9,7 @@ mdot_a = 173 #kg/s
 BPR = 12 # 12 for Part 1, Part 2 (9,11,13)
 FPR = 1.4 # 1.4 for Part 1, Part 2 (1.4, 1.5)
 LPCPR = 1.7
-HPCPR = 12.5 # 12.5 for Part 1, Part 2 (11,13,15)
+HPCPR = 12.5# 12.5 for Part 1, Part 2 (11,13,15)
 T4 = 1400 #K 1400 for part 1, Part 2  (1400,1500,1600)
 fan_isentropic_eff = 0.90
 LPC_isentropic_eff = 0.92
@@ -201,6 +201,10 @@ else:
 F_N = (F_core + F_bp)*10**(-3) # kN
 TSFC = mdot_f*10**3 /F_N #[g/(kN s)]
 OPR = total_p3/total_p2
+v_j_eff_core = (F_core / mdot_8) +  v0 #If choked, v_j becomes v_j_eff
+v_j_eff_bp = (F_bp / mdot_18) + v0
+K_e_core = 0.5 * mdot_8 * (v_j_eff_core**2 - v0**2)
+K_e_bp = 0.5 * mdot_18 * (v_j_eff_core**2 - v0**2)
 print('F_N=',F_N, 'kN')
 print('TSFC=',TSFC)
 print('OPR=', OPR)
@@ -247,7 +251,7 @@ plt.plot(FPR,SFC11, 'b', label='BPR=11')
 plt.plot(FPR,SFC13, 'g', label='BPR=13')
 plt.xlabel("FPR [-]")
 plt.ylabel("TSFC [g/(kN s)]")
-plt.title("TSFC vs FPR for different BPR')
+plt.title('TSFC vs FPR for different BPR')
 plt.legend()
 plt.grid()
 
@@ -282,4 +286,33 @@ plt.title('TSFC vs TIT for BPR=12 and FPR=1.4')
 plt.grid()
 plt.show()
 
-#--------------PART 3 -------------
+# #--------------PART 3 -------------
+#Thermodynamic Efficiency
+total_tg = T4 - ((mdot_core * cp_a * (total_t3 - total_t2)) / (mdot_4 * cp_g))
+total_pg = total_p_45(total_p4, LPT_isentropic_eff, total_tg, T4, gamma_g)
+total_t8dash = total_tg / ((total_pg/p_amb) ** (1 - 1/gamma_g))
+W_gg = mdot_45 * cp_g * (total_tg - total_t8dash)
+thdy_eff = W_gg / (mdot_3 * cp_a * (T4 - total_t3))
+# print(total_tg)
+# print(total_pg)
+# print(total_t8dash)
+print('The thermodynamic efficiency is=',thdy_eff)
+
+#GG Efficiency
+gg_eff = ((K_e_core + K_e_bp)) / W_gg
+print('The gas generation efficiency is=',gg_eff)
+
+#Propulsive Efficiency
+W_thr_core = mdot_8 * (v_j_eff_core - v0) * v0
+W_thr_bp = mdot_18 * (v_j_eff_core - v0) * v0
+prop_eff = (W_thr_core + W_thr_bp) / (K_e_core + K_e_bp)
+print('The propulsive efficiency is=', prop_eff)
+
+#Thermal Efficiency
+thermal_eff = ((K_e_bp + K_e_core)) / (mdot_f * LHV) #wrong for now, maybe units??
+print('The thermal efficiency is =', thermal_eff)
+
+
+#Overall efficiency
+total_eff = prop_eff * thermal_eff
+print('The overall engine efficiency is =', total_eff)
