@@ -1,12 +1,13 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import math
+import pyromat as pm
 
 
 #Engine parameters
 inlet_p_ratio = 0.98
 mdot_a = 173 #kg/s
-BPR = 12 # 12 for Part 1, Part 2 (9,11,13)
+BPR = 9# 12 for Part 1, Part 2 (9,11,13)
 FPR = 1.4 # 1.4 for Part 1, Part 2 (1.4, 1.5)
 LPCPR = 1.7
 HPCPR = 12.5# 12.5 for Part 1, Part 2 (11,13,15)
@@ -198,21 +199,87 @@ else:
     print('F_bp=', F_bp)
 
 # total
+M8 = v8/np.sqrt(gamma_g*gas_const*T8)
+M18 = v18/np.sqrt(gamma_a*gas_const*T18)
+total_t8 = total_T_amb(T8,gamma_g,M8)
+total_t18 = total_T_amb(T18,gamma_a,M18)
+total_p8 = total_p_amb(p8,gamma_g,M8)
+total_p18 = total_p_amb(p18,gamma_a,M18)
+print('Tt8',total_t8)
+print('pt8', total_p8)
 F_N = (F_core + F_bp)*10**(-3) # kN
 TSFC = mdot_f*10**3 /F_N #[g/(kN s)]
-OPR = total_p3/total_p2
+OPR = inlet_p_ratio*FPR*LPCPR*HPCPR
 v_j_eff_core = (F_core / mdot_8) +  v0 #If choked, v_j becomes v_j_eff
 v_j_eff_bp = (F_bp / mdot_18) + v0
 K_e_core = 0.5 * mdot_8 * (v_j_eff_core**2 - v0**2)
-K_e_bp = 0.5 * mdot_18 * (v_j_eff_core**2 - v0**2)
+K_e_bp = 0.5 * mdot_18 * (v_j_eff_bp**2 - v0**2)
 print('F_N=',F_N, 'kN')
 print('TSFC=',TSFC)
 print('OPR=', OPR)
 
 
+#------------------T-S ---------------
+pm.config['unit_pressure']='Pa'
+pm.config['unit_temperature']='K'
+pm.config['unit_energy']='J'
+air = pm.get('ig.air')
+
+s1 = air.s(T_amb,p_amb)
+s2 = air.s(total_t2,total_p2)
+s21 = air.s (total_t21, total_p21)
+s25 = air.s (total_t25, total_p25)
+s3 = air.s (total_t3, total_p3)
+s4 = air.s (T4, total_p4)
+s45 = air.s (total_t45, total_p45)
+s5 = air.s (total_t5, total_p5)
+s8 = air.s (T8,p8)
+s18 = air.s (T18,p18)
+
+
+T34 = np.linspace(total_t3,T4)     # This plots the curved line between 3 and 4
+p34 = np.linspace(total_p3,total_p4)
+s34 = np.zeros(np.shape(T34))
+for i in range(len(T34)):
+    s34[i] = air.s(T34[i],p34[i])
+    i = i+1
+plt.plot(s34, T34,'b',linewidth=1.5)
+
+T08 = np.linspace(T_amb,T8)    # This plots the curved line between 1 and 8
+p08 = np.linspace(p_amb,p8)
+s08 = np.zeros(np.shape(T08))
+for i in range(len(T08)):
+    s08[i] = air.s(T08[i],p08[i])
+    i = i+1
+plt.plot(s08, T08,'b',linewidth=1.5)
+
+
+plt.plot([s1,s2,s21,s25,s3],[T_amb,total_t2,total_t21,total_t25,total_t3],'b-o',linewidth=1.5)
+plt.plot ([s4,s45,s5,s8], [T4,total_t45,total_t5,T8,],'b-o',linewidth=1.5)
+plt.xlabel("s[J/(K kg)]")
+plt.ylabel("T [K]")
+plt.title('T-S Diagram')
+plt.grid()
+plt.show()
+
+plt.plot ([s1,s2,s21,s18,s1], [T_amb,total_t2,total_t21,T18,T_amb],'g-o',linewidth=1.5)
+plt.xlabel("s[J/(K kg)]")
+plt.ylabel("T [K]")
+plt.title('T-S Diagram')
+plt.grid()
+plt.show()
+
+
+
 #------------- PART 2 ----------------------------
-# This number come form running the program after
-# manually changing  the constants the values
+# This number come from running the program after
+# manually changing  the values
+# Thrust and SFC for BPR 9, 11 and 13
+BPR = np.array ([9,11,13])
+F_BPR_1_4 = np.array([21.105759284706633,18.705033402814526,16.64172821384842])
+SFC_BPR_1_4 = np.array([15.616853050080687,14.684351450647688,14.147120205656035])
+F_BPR_1_5 = np.array([22.046691016805507, 19.103040824486065,15.73834106092552])
+SFC_BPR_1_5 = np.array ([14.631132189683212,14.071409432301765,14.63977362958362])
 
 #Thust and SFC for FPR 1.4 and 1.5 for BPR 9, 11 and 13
 FPR = np.array([1.4, 1.5])
@@ -226,26 +293,44 @@ SFC13 = np.array([14.147120205656035,14.63977362958362]) #
 
 # Thrust and SFC varying HPCPR (11,13,15) with BPR 12 and FPR 1.4
 HPCPR = np.array([11,13,15])
-Fn_HPCPR = np.array([17.837785291126256,17.59537487891046,17.315404687820876])
-SFC_HPCPR = np.array([14.730982270860046,14.244883239554586,13.848258769740251])
-OPR = np.array([26.18,30.93, 35.7])
+Fn_HPCPR = np.array([17.834219852263917,17.591809404438415,17.311841253316317])
+SFC_HPCPR = np.array([14.733927306701482,14.247770365397088,13.851109267408646])
+OPR = np.array([25.65,30.32, 34.99])
 
 # Thrust and SFC varying Turbine inlet temp (1400,1500,1600) with BPR 12 and FPR 1.4 HPCPR 12.5
 TIT = np.array([1400, 1500, 1600])
-Fn_TIT = np.array([17.66001982889069,19.328605761285995, 20.65996997155316])
-SFC_TIT = np.array([14.35687652123111,14.968069266906191,15.734829050430928])
+Fn_TIT = np.array([17.656454142426373,19.325009704876194, 20.65635392983446])
+SFC_TIT = np.array([14.359775864432676,14.970854570626686,15.73758354420443])
 
-plt.subplot(3,2,1)
+plt.subplot(4,2,1)
+plt.plot(BPR,F_BPR_1_4, label = 'FPR=1.4')
+plt.plot(BPR,F_BPR_1_5, label = 'FPR=1.5')
+plt.xlabel("BPR [-]")
+plt.ylabel("Thrust [N]")
+plt.title('Thrust vs BPR')
+plt.grid()
+plt.legend()
+
+plt.subplot(4,2,2)
+plt.plot(BPR,SFC_BPR_1_4, label = 'FPR=1.4')
+plt.plot(BPR,SFC_BPR_1_5, label = 'FPR=1.5')
+plt.xlabel("BPR [-]")
+plt.ylabel("FSFC [g/(kN s)]")
+plt.title('FSFC vs BPR')
+plt.legend()
+plt.grid()
+
+plt.subplot(4,2,3)
 plt.plot(FPR,Fn9, 'r', label='BPR=9')
 plt.plot(FPR,Fn11, 'b', label='BPR=11')
 plt.plot(FPR,Fn13, 'g', label='BPR=13')
 plt.xlabel("FPR [-]")
 plt.ylabel("Thrust [kN]")
 plt.title('Thrust vs FPR for different BPR')
-plt.legend()
+plt.legend(loc='upper left', ncol=2)
 plt.grid()
 
-plt.subplot(3,2,2)
+plt.subplot(4,2,4)
 plt.plot(FPR,SFC9, 'r', label='BPR=9')
 plt.plot(FPR,SFC11, 'b', label='BPR=11')
 plt.plot(FPR,SFC13, 'g', label='BPR=13')
@@ -255,30 +340,28 @@ plt.title('TSFC vs FPR for different BPR')
 plt.legend()
 plt.grid()
 
-plt.subplot(3,2,3)
+plt.subplot(4,2,5)
 plt.plot(OPR,Fn_HPCPR )
 plt.xlabel("OPR [-]")
 plt.ylabel("Thrust [kN]")
 plt.title('Thrust vs OPR for BPR=12 and FPR=1.4')
 plt.grid()
 
-plt.subplot(3,2,4)
+plt.subplot(4,2,6)
 plt.plot(OPR, SFC_HPCPR)
 plt.xlabel("OPR [-]")
 plt.ylabel("TSFC [g/(kN s)]")
 plt.title('TSFC vs OPR for BPR=12 and FPR=1.4')
 plt.grid()
 
-
-
-plt.subplot(3,2,5)
+plt.subplot(4,2,7)
 plt.plot(TIT,Fn_TIT )
 plt.xlabel("TIT [K]")
 plt.ylabel("Thrust [kN]")
 plt.title('Thrust vs TIT for BPR=12 and FPR=1.4')
 plt.grid()
 
-plt.subplot(3,2,6)
+plt.subplot(4,2,8)
 plt.plot(TIT,SFC_TIT )
 plt.xlabel("TIT [K]")
 plt.ylabel("TSFC [g/(kN s)]")
@@ -290,10 +373,10 @@ plt.show()
 #Thermodynamic Efficiency
 total_tg = T4 - ((mdot_core * cp_a * (total_t3 - total_t2)) / (mdot_4 * cp_g))
 total_pg = total_p_45(total_p4, LPT_isentropic_eff, total_tg, T4, gamma_g)
-total_t8dash = total_tg / ((total_pg/p_amb) ** (1 - 1/gamma_g))
+total_t8dash = total_tg / ((total_pg/total_p_upstream) ** (1 - 1/gamma_g))
 W_gg = mdot_45 * cp_g * (total_tg - total_t8dash)
 thdy_eff = W_gg / (mdot_3 * cp_a * (T4 - total_t3))
-# print(total_tg)
+print('Ttg',total_tg)
 # print(total_pg)
 # print(total_t8dash)
 print('The thermodynamic efficiency is=',thdy_eff)
@@ -304,7 +387,7 @@ print('The gas generation efficiency is=',gg_eff)
 
 #Propulsive Efficiency
 W_thr_core = mdot_8 * (v_j_eff_core - v0) * v0
-W_thr_bp = mdot_18 * (v_j_eff_core - v0) * v0
+W_thr_bp = mdot_18 * (v_j_eff_bp - v0) * v0
 prop_eff = (W_thr_core + W_thr_bp) / (K_e_core + K_e_bp)
 print('The propulsive efficiency is=', prop_eff)
 
@@ -316,3 +399,5 @@ print('The thermal efficiency is =', thermal_eff)
 #Overall efficiency
 total_eff = prop_eff * thermal_eff
 print('The overall engine efficiency is =', total_eff)
+
+
