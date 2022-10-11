@@ -6,3 +6,5 @@ mdot_f = 0.4267 #kg/s
 tot_comp_ratio = 5.5
 t0 = 288 #k
 p0 = 100000 #Pa
+comb_eff = 1
+nozz_eff = 1
