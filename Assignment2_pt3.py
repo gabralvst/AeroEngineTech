@@ -43,9 +43,10 @@ t_t_amb = total_T_amb(t_amb, gamma_air, Mach)
 p_t_amb = total_p_amb(p_amb, gamma_air, Mach)
 p_t1 = p_t_amb #assuming no pressure change in the inlet
 t_t1 = t_t_amb
-p_t2 = p_t1 * tot_comp_ratio #p at compressor outlet
-t_t2 = T_current(t_t1, comp_eff, p_t2, p_t1, gamma_air) #t at compressor outlet
+t_t2 = (1 + cp_g/cp_a * kh * TIT/t_t1) * t_t1
 comp_t_ratio = (1 + cp_g/cp_a * kh * (TIT/t_t1))
+comp_p_ratio = (1 + cp_g/cp_a * kh * (TIT/t_t1)) ** (gamma_air * comp_eff/ (gamma_air-1))
+p_t2 = p_t1 * comp_p_ratio
 p_t3 = p_t2 #assuming no pressure loses in CC
 turb_p_ratio = 1 / ((A_turbine/A_nozzle)**(2*gamma_gas / (2*gamma_gas - turb_eff*(gamma_gas-1)))) #assuming choked turbine and nozzle
 turb_t_ratio = 1 / (turb_p_ratio)**(turb_eff * (gamma_gas-1) / gamma_gas)
@@ -66,7 +67,6 @@ if choked_core > choked_core_lim:
 else:
     print('The core nozzle is NOT choked', choked_core)
 
-
-print('Compressor T ratio', comp_t_ratio)
+print('Compressor T ratio', comp_t_ratio, 'Compressor P ratio', comp_p_ratio)
 print('Turbine T ratio', turb_t_ratio, 'Turbine P ratio', turb_p_ratio)
 
