@@ -39,6 +39,7 @@ def T_current(T_previous, isentropic_eff, p_current, p_previous, gamma): #in K
     T_current = T_previous * (1 + 1/isentropic_eff * ((p_current/p_previous)**((gamma-1)/gamma) -1))
     return T_current
 
+
 t_t_amb = total_T_amb(t_amb, gamma_air, Mach)
 p_t_amb = total_p_amb(p_amb, gamma_air, Mach)
 p_t1 = p_t_amb #assuming no pressure change in the inlet
