@@ -7,7 +7,7 @@ mdot_f = 0.4267 #kg/s
 tot_comp_ratio = 5.5
 comb_eff = 1
 comp_eff = 1
-turb_eff = 1
+turb_eff = 0.8
 nozz_eff = 1
 gamma_air = 1.4
 gamma_gas = 1.3
@@ -52,7 +52,7 @@ M_lst = []
 T_ratio_lst = []
 Psratio_lst = []
 beta_lst = []
-x_axis = np.arange(0,Nstages,1) #delete *2 to plot pressure ratio per stage
+x_axis = np.arange(0,Nstages*2,1) #delete *2 to plot pressure ratio per stage
 for i in range(Nstages):
     Tt = T_lst[i] + deltaT
     T_lst.append(Tt)
@@ -65,14 +65,14 @@ for i in range(Nstages):
 #    T_ratio_lst.append(Ttratio)
     beta = Ttratio**((gamma_air*comb_eff)/(gamma_air-1))
     beta_lst.append(beta)
-#    beta_lst.append(beta)
+    beta_lst.append(beta)
     Pt = P_lst[i] * beta_lst[i]
     P_lst.append(Pt)
     Ps = P_lst[i]*(1+(gamma_air-1)/2*M**2)**(-gamma_air/(gamma_air-1))
     Ps_lst.append(Ps)
     Psratio = Ps_lst[i] / P_lst[0]
     Psratio_lst.append(Psratio)
- #   Psratio_lst.append(Psratio)
+    Psratio_lst.append(Psratio)
 
 
 mean_radius = tip_speed / ((2*np.pi*RPM)/60)
@@ -83,6 +83,6 @@ print(mean_radius)
 print(blade_height)
 print(beta_lst)
 #plt.plot(x_axis[1:], T_ratio_lst[1:])
-#plt.plot(x_axis[1:], beta_lst[1:])
-plt.plot(x_axis[1:], Psratio_lst[1:])
+plt.plot(x_axis[1:], beta_lst[1:])
+#plt.plot(x_axis[1:], Psratio_lst[1:])
 plt.show()
