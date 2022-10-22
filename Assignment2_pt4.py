@@ -43,15 +43,19 @@ work = cp_a*(t_t2 - t_t1)
 work_per_stage = work / Nstages
 tip_speed = np.sqrt(work_per_stage / work_coeff)
 deltaT = work_per_stage / cp_a
+t_s1 = t_t1 - ((gamma_air - 1) / 2) * (V1 ** 2 / (gamma_air * R))
 
 T_lst = [t_t1]
 P_lst = [p_t1]
 Ps_lst = []
-Ts_lst = []
+Ts_lst = [t_s1]
 M_lst = []
 T_ratio_lst = []
+Ts_ratio_lst = []
 Psratio_lst = []
 beta_lst = []
+delta_s_lst = []
+h_lst = []
 x_axis = np.arange(0,Nstages*2,1) #delete *2 to plot pressure ratio per stage
 for i in range(Nstages):
     Tt = T_lst[i] + deltaT
@@ -62,7 +66,9 @@ for i in range(Nstages):
     M_lst.append(M)
     Ttratio = Tt/T_lst[0]
     T_ratio_lst.append(Ttratio)
-#    T_ratio_lst.append(Ttratio)
+#   T_ratio_lst.append(Ttratio)
+    Tsratio = Ts_lst[-1] / Ts_lst[-2]
+    Ts_ratio_lst.append(Tsratio)
     beta = Ttratio**((gamma_air*comb_eff)/(gamma_air-1))
     beta_lst.append(beta)
     beta_lst.append(beta)
@@ -70,19 +76,23 @@ for i in range(Nstages):
     P_lst.append(Pt)
     Ps = P_lst[i]*(1+(gamma_air-1)/2*M**2)**(-gamma_air/(gamma_air-1))
     Ps_lst.append(Ps)
-    Psratio = Ps_lst[i] / P_lst[0]
+    Psratio = Ps_lst[-1] / P_lst[-2]
     Psratio_lst.append(Psratio)
     Psratio_lst.append(Psratio)
+    delta_s = cp_a * np.log(Ts_ratio_lst[i]) - R * np.log(Psratio_lst[i]) #Enthalpy
+    delta_s_lst.append(delta_s)
+    delta_s_lst.append(delta_s)
+    h = cp_a * deltaT
 
 
 mean_radius = tip_speed / ((2*np.pi*RPM)/60)
 blade_height = mdot_engine / (rho_amb * V1 * 2 * np.pi * mean_radius)
-print(work)
-print(tip_speed)
-print(mean_radius)
-print(blade_height)
-print(beta_lst)
+
+
+
+
 #plt.plot(x_axis[1:], T_ratio_lst[1:])
-plt.plot(x_axis[1:], beta_lst[1:])
+#plt.plot(x_axis[1:], beta_lst[1:])
 #plt.plot(x_axis[1:], Psratio_lst[1:])
+plt.plot(x_axis[1:], delta_s_lst[1:])
 plt.show()
