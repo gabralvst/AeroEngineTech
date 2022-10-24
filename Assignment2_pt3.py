@@ -5,8 +5,8 @@ mdot_a = 23.81  #kg/s
 mdot_f = 0.4267 #kg/s
 tot_comp_ratio = 5.5
 comb_eff = 1
-comp_eff = 0.8
-turb_eff = 0.8
+comp_eff = 0.89
+turb_eff = 0.89
 nozz_eff = 1
 gamma_air = 1.4
 gamma_gas = 1.3
@@ -19,9 +19,9 @@ Mach = 0.78
 TIT = 1150 #k
 t_amb = 219
 p_amb = 23911 #Pa
-kh = 0.152
-A_turbine = 0.037   #m2
-A_nozzle = 0.079  #m2
+kh = 0.161
+A_turbine = 0.5103267031956857 * 0.07679508070244695  #m2
+A_nozzle = 0.0768 #m2
 
 v0 = Mach*np.sqrt(gamma_air * gas_const * t_amb)
 def total_T_amb(T, gamma, M):
