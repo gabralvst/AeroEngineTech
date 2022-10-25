@@ -16,16 +16,15 @@ gamma_a = 1.4
 gamma_g = 1.3
 gas_const = 287 #J/kg/K
 
-# Deliverable 2
-A_turbine = 0.037   #m2
-A_nozzle = 0.079  #m2
+kh = 0.16095
+A_nozzle = 0.076795  #m2
+A_turbine = A_nozzle * 0.5103267031956857
 Tt1 = 288   #K
-Pt1 = 1e5    #Pa
+Pt1 = 100000    #Pa
 Tt3 = 900   #K
-nc = 1  #compressor eff
-nt = 1  #turbine eff
+nc = 0.89  #compressor eff
+nt = 0.89  #turbine eff
 
-kh = 0.152
 # kh = 1 - (A_turbine/A_nozzle) ** (2*(gamma_g-1)/ (gamma_g+1))
 print('kh', kh)
 
@@ -43,7 +42,7 @@ chocked_core = Pt4/Pt1
 chocked_limit_core = (1-(1/nozz_eff)*((gamma_g-1)/(gamma_g+1)))**(-gamma_g/(gamma_g-1))
 
 if chocked_core > chocked_limit_core:
-    print('The core nozzle is chocked', chocked_core)
+    print('The core nozzle is chocked', chocked_core, chocked_limit_core)
 else:
     print('The core nozzle is NOT chocked', chocked_core)
 
