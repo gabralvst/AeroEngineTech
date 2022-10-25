@@ -33,7 +33,7 @@ reaction = 0.5
 flow_coeff = 0.6
 work_coeff = 0.4
 u_max = 450 #m/s
-Nstages = 8
+Nstages = 9
 RPM = 13800 #rot/min
 V1 = 150.38
 V2 = 206.68
@@ -51,9 +51,9 @@ pm.config['unit_pressure']='Pa'
 pm.config['unit_temperature']='K'
 pm.config['unit_energy']='J'
 air = pm.get('ig.air')
-
+beta0 = 0
 s0 = air.s(t_amb,p_amb)
-
+s1 = s0[0]
 T_lst = [t_t1]
 P_lst = [p_t1]
 Ps_lst = []
@@ -65,13 +65,13 @@ Psratio_lst = []
 beta_lst = []
 delta_s_lst = []
 h_lst = [h1]
-s_lst = [s0]
+s_lst = [s1]
 rho0 = p_amb/(R*t_amb)
 density = [rho0]
 A_0= mdot_a /(rho0*V1)
 # Area = []
 # Area_list = [A_0]
-x_axis = np.arange(0,Nstages*2,1) #delete *2 to plot pressure ratio per stage
+x_axis = np.arange(0,Nstages,1) #delete *2 to plot pressure ratio per stage
 for i in range(Nstages):
     Tt = T_lst[i] + deltaT
     T_lst.append(Tt)
@@ -81,28 +81,35 @@ for i in range(Nstages):
     M_lst.append(M)
     Ttratio = Tt/T_lst[i]
     T_ratio_lst.append(Ttratio)
-#   T_ratio_lst.append(Ttratio)
+    T_ratio_lst.append(Ttratio)
     Tsratio = Ts / Ts_lst[i]
     Ts_ratio_lst.append(Tsratio)
-    beta = Ttratio**((gamma_air*comb_eff)/(gamma_air-1))
+    beta = Ttratio**((gamma_air*comp_eff)/(gamma_air-1))
     beta_lst.append(beta)
-    beta_lst.append(beta)
+   # beta_lst.append(beta)
+    #print(beta_lst)
     Pt = P_lst[i] * beta_lst[i]
     P_lst.append(Pt)
     Ps = P_lst[i]*(1+(gamma_air-1)/2*M**2)**(-gamma_air/(gamma_air-1))
     Ps_lst.append(Ps)
-    Psratio = Ps / P_lst[i]
+    Psratio = Ps / P_lst[0]
     Psratio_lst.append(Psratio)
-    Psratio_lst.append(Psratio)
+   # Psratio_lst.append(Psratio)
     delta_s = cp_a * np.log(Ts_ratio_lst[i]) - R * np.log(Psratio_lst[i]) #Enthalpy
     delta_s_lst.append(delta_s)
-   # delta_s_lst.append(delta_s)
-    #print(delta_s_lst)
-    h = h_lst[i] + deltah
+    delta_s_lst.append(delta_s)
+    #print(delta_s)
+    h = h_lst[-1] + deltah
     h_lst.append(h)
-    s = s_lst[i] + delta_s
+    h_lst.append(h)
+    s = s_lst[-1] + delta_s_lst[-2]
     s_lst.append(s)
-    print(s_lst)
+    s_lst.append(s)
+    #print(delta_s)
+    # print(deltah)
+    # print(h_lst)
+    #print(h_lst)
+
     # rho = Pt / (Tt*R)
     # density.append(rho)
     # A_rotor = mdot_a /(density[i]*V1)
@@ -154,9 +161,19 @@ rotor_x_coor.sort()
 # plt.plot(xlst, tip_rad)
 # plt.show()
 
+#
+plt.plot(x_axis[1:], Psratio_lst[1:])
+plt.xlabel('Number of Stages')
+plt.ylabel("P/P$_{t0}$")
 
-#plt.plot(x_axis[1:], T_ratio_lst[1:])
-#plt.plot(x_axis[1:], beta_lst[1:])
+# plt.subplot(2,2,2)
+# plt.plot(x_axis[1:], beta_lst[1:])
+# plt.xlabel('Number of Stages')
+# plt.ylabel('$\\beta_{stage}$')
+#plt.ylabel('P$_t$/P$_{t0}$')
+
+#plt.ylabel('$\\beta_{stage}$')
+
 #plt.plot(x_axis[1:], Psratio_lst[1:])
-#plt.plot(x_axis, s_lst[1:])
-#plt.show()
+#plt.plot(s_lst[1:], h_lst[1:])
+plt.show()
