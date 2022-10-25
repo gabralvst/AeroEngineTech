@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import pyromat as pm
 
 gross_th= 15167 #N
 mdot_a = 23.81  #kg/s   #check mdot values again
@@ -46,7 +47,12 @@ deltaT = work_per_stage / cp_a
 t_s1 = t_t1 - ((gamma_air - 1) / 2) * (V1 ** 2 / (gamma_air * R))
 h1 = cp_a * (t_t1 - t_amb)
 deltah = cp_a * deltaT
+pm.config['unit_pressure']='Pa'
+pm.config['unit_temperature']='K'
+pm.config['unit_energy']='J'
+air = pm.get('ig.air')
 
+s0 = air.s(t_amb,p_amb)
 
 T_lst = [t_t1]
 P_lst = [p_t1]
@@ -59,6 +65,7 @@ Psratio_lst = []
 beta_lst = []
 delta_s_lst = []
 h_lst = [h1]
+s_lst = [s0]
 rho0 = p_amb/(R*t_amb)
 density = [rho0]
 A_0= mdot_a /(rho0*V1)
@@ -89,11 +96,13 @@ for i in range(Nstages):
     Psratio_lst.append(Psratio)
     delta_s = cp_a * np.log(Ts_ratio_lst[i]) - R * np.log(Psratio_lst[i]) #Enthalpy
     delta_s_lst.append(delta_s)
-    delta_s_lst.append(delta_s)
-    #delta_s_lst.append(delta_s)
+   # delta_s_lst.append(delta_s)
+    #print(delta_s_lst)
     h = h_lst[i] + deltah
     h_lst.append(h)
-    print(h_lst)
+    s = s_lst[i] + delta_s
+    s_lst.append(s)
+    print(s_lst)
     # rho = Pt / (Tt*R)
     # density.append(rho)
     # A_rotor = mdot_a /(density[i]*V1)
@@ -149,5 +158,5 @@ rotor_x_coor.sort()
 #plt.plot(x_axis[1:], T_ratio_lst[1:])
 #plt.plot(x_axis[1:], beta_lst[1:])
 #plt.plot(x_axis[1:], Psratio_lst[1:])
-#plt.plot(x_axis[1:], delta_s_lst[1:])
+#plt.plot(x_axis, s_lst[1:])
 #plt.show()
