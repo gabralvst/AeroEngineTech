@@ -32,10 +32,22 @@ gamma_a = 1.4
 gamma_g = 1.33
 r_fan = 0.5 #meters
 W_generator = 4.76 * 10 **6 #W
+Thrust_original = 17635
+
+#new eff 2030
+motor_eff = 0.95
+cable_eff = 0.995
+rectfier_eff = 0.99
+
+#new eff 2040
+motor_eff2 = 0.97
+cable_eff2 = 0.998
+rectfier_eff2 = 0.995
 
 #Flight Conditions
 M = 0.78
 h = 10668 #m, altitude
+M_fan = 0.55
 
 #Definitions of required EQs
 def total_T_amb(T, gamma, M):
@@ -77,8 +89,11 @@ total_p2 = total_p_upstream * inlet_p_ratio
 print('pt_2=',total_p2)
 print('Tt_2=',total_t2)
 #Mass Flows
-A_fan = 0.65 * np.pi * r_fan **2
-mdot_FANS = rho_amb * A_fan * v0
+# A_fan = 0.65 * np.pi * r_fan **2
+A_fan = np.pi * (r_fan **2 - (0.35 * r_fan)**2)
+v_fan = M_fan*np.sqrt(gamma_a * gas_const * T_amb)
+
+mdot_FANS = rho_amb * A_fan * v_fan
 mdot_core = mdot_FANS / (BPR + 1) #Change index for BPR for Part 2
 mdot_bypass = mdot_FANS * BPR / (BPR + 1)
 print('mdot fans=', mdot_FANS)
@@ -92,8 +107,18 @@ total_t21 = T_current(total_t2, fan_isentropic_eff, total_p21, total_p2, gamma_a
 
 
 W_fan = work(mdot_FANS, cp_a, total_t21, total_t2)
-number_fans = W_generator / W_fan
+Thrust_fan = W_fan/v0
+# number_fans = W_generator / W_fan
+number_fans_per_wing = Thrust_original / Thrust_fan
 print('pt_21=',total_p21)
 print('Tt_21=',total_t21)
 print('W_fan=',W_fan)
-print('Fans required=', number_fans)
+print('Fans required=', number_fans_per_wing)
+print('Thrust fan', Thrust_fan)
+
+W_mot = W_fan/mech_eff / motor_eff
+W_generator2 = (math.ceil(number_fans_per_wing)*W_mot)/ rectfier_eff/cable_eff
+
+powertrain_eff1 = mech_eff * motor_eff * rectfier_eff * cable_eff
+powertrain_eff2 = mech_eff * motor_eff2 * rectfier_eff2 * cable_eff2
+print(W_generator2)
