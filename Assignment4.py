@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 Cp_air = 1000
 Cp_gas = 1150
 LHV = 43e6 #J/kg
-
+R_air = 287 #J/kg/K
 # Fuel composition
 C = 11
 H = 22
@@ -26,8 +26,8 @@ def eq_ratio2(mdot_air_2,Tt3_2, Tt4_2, mdot_fuel):
     ratio = ratio_stoi / (mdot_air_2 / mdot_fuel)
     return ratio
 
-def residence_time(mdot_gas, combustorVOL):
-    time = combustorVOL / mdot_gas
+def residence_time(vdot_gas, combustorVOL):
+    time = combustorVOL / vdot_gas
     return time
 
 def abs_heat_density(heat_release, combustorVOL):
@@ -37,6 +37,10 @@ def abs_heat_density(heat_release, combustorVOL):
 def norm_heat_density(heat_release, combustorVOL, air_pressure):
     norm_heat_dens = heat_release / combustorVOL / (air_pressure / 100000)
     return norm_heat_dens
+
+def gas_density(pressure, R, temp):
+    rho = pressure / (R * temp)
+    return rho
 
 mdot_air_lst = [14.5, 29.5, 37.5]
 P3_lst = [1100e3, 1950e3, 3350e3]
@@ -48,6 +52,8 @@ eq_ratio_lst = []
 eq_ratio_RQLlst = []
 T_adiabatic_lst = []
 mdot_gas_lst = []
+rho_lst = []
+vdot_gas_lst = []
 residence_lst=[] #s
 combustorVOL = 0.012 * combustor_stages #m3
 heat_released_lst = []
@@ -60,7 +66,11 @@ for i in range(0,3):
         eq_ratio_RQLlst.append(eq_ratio2(mdot_air_lst[i] * X_lst[i2], T3_lst[i], T4_lst[i], mdot_fuel_lst[i]))
     mdot_gas = mdot_fuel_lst[i] + mdot_air_lst[i]
     mdot_gas_lst.append(mdot_gas)
-    residence = residence_time(mdot_gas_lst[i], combustorVOL)
+    rhos = gas_density(P3_lst[i], R_air, T3_lst[i])
+    rho_lst.append(rhos)
+    volume_flow = mdot_gas_lst[i] / rho_lst[i]
+    vdot_gas_lst.append(volume_flow)
+    residence = residence_time(vdot_gas_lst[i], combustorVOL)
     residence_lst.append(residence)
     heat_released = LHV * mdot_fuel_lst[i] / 1000 #kW
     heat_released_lst.append(heat_released)
